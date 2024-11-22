@@ -1,6 +1,8 @@
 # Reach tag test scripts
  
 Script tags and extracted scripts from the post launch 2011 tag build of Halo: Reach.
-> Some of the scripts contain the original comments which is pretty cool to see.
 
-> Scripts in the 'scripts' folder might not be entirely correct, as I haven't checked them all to see if there are any trailing bytes at the end. Please keep that in mind.
+> These scripts contain the original comments which is pretty cool to see 14 years later.
+
+> [!NOTE]
+> Some filenames are duplicates, so they'll have an '_#' after the actual filename, please keep that in-mind that some of these names are not 1:1.
