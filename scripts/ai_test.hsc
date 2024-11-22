@@ -1,801 +1,3926 @@
-;*********************************************************************;
-;Main Script
-;*********************************************************************;
-(script startup ai_test	
-	(print "ai_test go!")
-	
-	(ai_allegiance human player)
+;=====================================================================;
+;=====globals=========================================================;
+;=====================================================================;
+
+(global short s_spawn 0)
+(global short s_cleanup 0)
+(global short s_weapon_type 0)
+(global short s_character_type 0)
+(global short s_covenant 0)
+(global short s_thespian 0)
+(global short s_friendly_objcon 0)
+(global short s_friendly 2)
+(global boolean b_voice_toggle 0)
+(global boolean b_vision 0)
+(global boolean b_stealth 0)
+(global boolean b_plasma 0)
+(global boolean b_dual 0)
+(global boolean b_needle 0)
+(global boolean b_flak 0)
+(global boolean b_weapon 1)
+(global boolean b_character 1)
+(global boolean b_evaluate 0)
+(global boolean b_spartan 0)
+(global boolean b_spartan_health 0)
+(global boolean b_speed_test 0)
+(global boolean b_grunt 0)
+(global boolean b_jackal 0)
+(global boolean b_elite_pack 0)
+(global boolean b_blinddeaf 0)
+(global boolean b_follow 0)
+(global boolean b_nocleanup 0)
+(global boolean b_night 0)
+(global boolean b_player_front 0)
+(global boolean b_cue_test 0)
+(global boolean b_double 0)
+(global boolean b_challenge 0)
+(global boolean b_versus 0)
+(global boolean b_spartan_spawn 0)
+(global boolean b_full_spartans 0)
+(global boolean b_test_fallback 0)
+(global boolean b_thespian_carter 0)
+(global boolean b_thespian_trooper 0)
+(global boolean b_thespian_elite 0)
+(global boolean b_thespian_grunt 0)
+(global boolean b_thespian_skirmisher 0)
+(global boolean b_thespian_brute 0)
+(global boolean b_thespian 0)
+
+;=====================================================================;
+;=====main script=====================================================;
+;=====================================================================;
+
+(script startup ai_test
+	(print "hello")
 	(ai_allegiance player human)
+	
+	(sleep 1)
+
+	(wake sc_spawner)
+	(wake sc_input)
+	(wake sc_cleanup)
+	
+	;(wake sc_marine_test)
+	;(wake sc_voice_toggle)
+	;(wake sc_speed_test)
 )
 
-(script command_script sleep_cs
-	(sleep_forever)
+(script static void sv_effect_test
+	(effect_new "fx\fx_library\_placeholder\placeholder_explosion.effect" cf_test)
 )
 
-; =================================================================================================
-; SPARTANS SCRIPTS
-; =================================================================================================
-(script dormant spartans_start
-	(print "spartans")
-	(ai_place spartan_carter)
-	(ai_place spartan_kat)
-	(ai_place spartan_jorge)
-	
-	(ai_cannot_die gr_spartans TRUE)
-	
-	; Teleport
-	(object_teleport_to_ai_point (player0)  ps_teleports/spartan_test)
+(script static void phantom
+	(ai_place sq_phantom)
+)
+
+(script dormant sc_voice_toggle
+	(sleep_until
+		(begin
+			(sleep 300)
+			(if
+				(= b_voice_toggle 0)
+				(begin
+					(print "human voice")
+					(set b_voice_toggle 1)	
+				)
+				(begin
+					(print "grunt voice")
+					(set b_voice_toggle 0)
+				)
+			)
+		0)
+	)
+)
+
+(script static void sv_test
+	(if (= b_test_fallback 0)
+		(begin
+			(set b_test_fallback 1)
+			(print " falling back ")
+		)
+		(begin
+			(set b_test_fallback 0)
+			(print " moving forward ")
+		)
+	)
+)
+
+(script dormant sc_speed_test
+	(sleep_until
+		(begin
+			(sleep 300)
+			(if (= b_speed_test 0)
+				(begin
+					(set b_speed_test 1)
+					(print " ************* ")
+					(print "b_speed_test set to 1")
+					(print " ************* ")
+				)
+				(begin
+					(set b_speed_test 0)
+					(print " ************* ")
+					(print "b_speed_test set to 0")
+					(print " ************* ")
+				)
+			)
+		0)
+	1)
+)
+
+(script command_script cs_stow_weapon
+	(cs_stow TRUE)
+)
+
+(script static void moa
+	(ai_place sq_moa)
+)
+
+(script static void challenge
+	(if (= b_challenge 0)
+		(begin
+			(wake sc_challenge)
+			(sleep_forever sc_input)
+		)
+		(begin
+			(sleep_forever sc_challenge)
+		)
+	)
+)
+
+(script dormant sc_challenge
+	(sleep_until
+		(begin
+			(sleep 1)
+			(sleep_until (= (ai_task_count obj_bottom/main_gate) 0) 1)
+				(print "round 1")
+				(garbage_collect_now)
+				(game_save)
+				(sleep 30)
+				(unit_set_current_vitality (player0) 100 100)
+				(ai_place sq_elite01/minor_plasma)
+			
+			(sleep_until (= (ai_task_count obj_bottom/main_gate) 0) 1)
+				(print "round 2")
+				(garbage_collect_now)
+				(game_save)
+				(sleep 30)
+				(unit_set_current_vitality (player0) 100 100)		
+				(ai_place sq_elite01/minor_plasma)
+				(ai_place sq_elite01/minor_repeater)	
+			
+			(sleep_until (= (ai_task_count obj_bottom/main_gate) 0) 1)
+				(print "round 3")
+				(garbage_collect_now)
+				(game_save)
+				(sleep 30)
+				(unit_set_current_vitality (player0) 100 100)
+				(ai_place sq_elite01/specop_dual)
+				(ai_place sq_elite01/specop_dual)				
+			
+			(sleep_until (= (ai_task_count obj_bottom/main_gate) 0) 1)
+				(print "round 4")
+				(garbage_collect_now)
+				(game_save)
+				(sleep 30)
+				(unit_set_current_vitality (player0) 100 100)
+				(ai_place sq_elite01/ultra_repeater)
+				(ai_place sq_grunt01/grunt_plasma)
+				(ai_place sq_grunt01/grunt_plasma)
+				(ai_place sq_grunt01/grunt_plasma)	
+				(sv_weapon_spawn)	
+			
+			(sleep_until (= (ai_task_count obj_bottom/main_gate) 0) 1)
+				(print "round 5")
+				(garbage_collect_now)
+				(game_save)
+				(sleep 30)
+				(unit_set_current_vitality (player0) 100 100)
+				(ai_place sq_brute01/brute_spike)
+				(ai_place sq_brute01/brute_spike)
+				(ai_place sq_brute01/brute_spike)
+				(ai_place sq_brute01/brute_spike)
+			
+			
+			(sleep_until (= (ai_task_count obj_bottom/main_gate) 0) 1)
+				(print "round 6")
+				(garbage_collect_now)
+				(game_save)
+				(sleep 30)
+				(unit_set_current_vitality (player0) 100 100)
+				(ai_place sq_skirmisher01/skirmisher_plasma)
+				(ai_place sq_skirmisher01/skirmisher_plasma)
+				(ai_place sq_skirmisher01/skirmisher_plasma)
+				(ai_place sq_skirmisher01/skirmisher_plasma)
+			
+			(sleep_until (= (ai_task_count obj_bottom/main_gate) 0) 1)
+				(print "round 7")
+				(garbage_collect_now)
+				(game_save)
+				(sleep 30)
+				(unit_set_current_vitality (player0) 100 100)
+				(ai_place sq_elite01/general_concussion)
+				(ai_place sq_jackal01/jackal_plasma)
+				(ai_place sq_jackal01/jackal_plasma)
+				(ai_place sq_grunt01/grunt_plasma)
+				(ai_place sq_grunt01/grunt_plasma)
+				(ai_place sq_grunt01/grunt_plasma)	
+				(sv_weapon_spawn)		
+		0)
+	1)
+)
+
+(script static void versus
+	(if (= b_versus 0)
+		(begin
+			(print "versus mode started")
+			(wake sc_versus_unsc)
+			(wake sc_versus_covenant)
+			(sleep_forever sc_input)
+		)
+		(begin
+			(print "versus mode ended")
+			(sleep_forever sc_versus_unsc)
+			(sleep_forever sc_versus_covenant)
+		)
+	)
 )
 
 (script static void spartans
-	(wake spartans_start)
-)
-
-(script static void test_spartan_action
-	(ai_place spartan_carter)
-	(thespian_performance_setup_and_begin vig_spartan_look "" 0)
-)
-
-(script static void cov
-	(print "cov")
-	(ai_place spartan_test_cov)
-)
-
-
-; =================================================================================================
-; autoturret SCRIPTS
-; =================================================================================================
-(script static void autoturret_start
-	(print "autoturret")
-	(object_create auto_turrent)
-	(object_hide auto_turrent TRUE)
-	(vehicle_auto_turret auto_turrent tv_all 0 0 0)
-)
-
-
-; =================================================================================================
-; BFG SCRIPTS
-; =================================================================================================
-(script startup hide_mac
-	(object_hide sc_hud_mac TRUE)
-)
-
-(script static void test_mac
-	;(vehicle_load_magic v_mac "" player0)
-	;(objects_attach v_mac "" sc_hud_mac "")
-	(f_hud_flash_object_fov sc_hud_mac)
-	(f_blip_title v_mac "WP_CALLOUT_M10_VISEGRAD")
-)
-
-
-; =================================================================================================
-; BUG:vig loop
-; =================================================================================================
-(global boolean g_loop_test FALSE)
-(script static void test_vig_loop
-	(ai_place spartan_kat)
-	(thespian_performance_setup_and_begin vig_loop "" 0)
-	(sleep 30)
-	(print "setting g_loop_test TRUE")
-	(set g_loop_test TRUE)
-	(sleep_forever)
-)
-
-; =================================================================================================
-; BUG:FLY_TO_FACE SCRIPTS
-; =================================================================================================
-(script static void fork_test
-	(ai_place fork_bug)
-)
-
-(script command_script cs_fork02
-	(cs_enable_pathfinding_failsafe TRUE)
-	(cs_fly_to ps_bugs/fork02_goto01)
-	(cs_fly_to_and_face ps_bugs/fork02_goto01 ps_bugs/fork02_face01)
-	(sleep_forever)
-)
-
-; =================================================================================================
-; BUG:PERSISTANCE
-; =================================================================================================
-(script static void test_recycle
-	(ai_place sq_wraith)
-	(unit_kill (ai_vehicle_get_from_squad sq_wraith 0))
-	(object_set_persistent (ai_vehicle_get_from_squad sq_wraith 0) TRUE)
-	(sleep 30)
-	(sleep_until
+	(if (= b_spartan_spawn 0)
 		(begin
-			(add_recycling_volume tv_recyle_test 0 0)
-			FALSE
+			(set b_spartan_spawn 1)
+			(print "spartans will spawn now")
 		)
-	)
-	
-)
-
-
-; =================================================================================================
-; BUG: object scale in
-; =================================================================================================
-(script dormant scale_in
-	(ai_place banshee)
-	(object_set_scale (ai_vehicle_get_from_squad banshee 0) .01 0)
-	(sleep 10)
-	(object_set_scale (ai_vehicle_get_from_squad banshee 0) 1 60)
-)
-
-(script static void test_scale_in
-	(wake scale_in)
-)
-
-; =================================================================================================
-; banshee: loadup
-; =================================================================================================
-(script static void test_banshee
-	(object_create v_banshee)
-	(ai_place sq_elite)
-	(ai_vehicle_enter sq_elite v_banshee "banshee_d")
-)
-
-
-; =================================================================================================
-; falcon: loadup
-; =================================================================================================
-(script static void test_m10_start
-	(object_create v_falcon02)
-	(ai_place spartan_carter)
-	(sleep 1)
-	(ai_vehicle_reserve_seat v_falcon02 "falcon_d" TRUE)
-	(ai_vehicle_enter_immediate spartan_carter v_falcon02 "falcon_p_bench")
-	(vehicle_load_magic v_falcon02 "falcon_p_l1" player0)
-)
-
-
-; =================================================================================================
-; falcon: loadup
-; =================================================================================================
-(script static void test
-	(object_create v_falcon03)
-	(vehicle_set_player_interaction v_falcon03 "falcon_d" FALSE FALSE)
-	(vehicle_set_player_interaction v_falcon03 "falcon_p_l1" FALSE FALSE)
-	(vehicle_set_player_interaction v_falcon03 "falcon_p_r1" FALSE FALSE)
-	(vehicle_set_player_interaction v_falcon03 "falcon_p_l2" FALSE FALSE)
-	(vehicle_set_player_interaction v_falcon03 "falcon_p_r2" FALSE FALSE)
-)
-
-(script static void test_falcon
-	(object_create v_falcon)
-	(ai_vehicle_reserve_seat v_falcon "falcon_d" TRUE)
-	
-	(ai_place spartan_carter)
-	(ai_place spartan_kat)
-	(ai_place spartan_jorge)
-	(sleep 1)
-	(wake falcon_load)
-	
-	(sleep_until (= (f_vehicle_rider_number v_falcon) 1) 1)
-	(print "1")
-	
-	(sleep_until (= (f_vehicle_rider_number v_falcon) 2) 1)
-	(print "2")
-	
-	(sleep_until (= (f_vehicle_rider_number v_falcon) 3) 1)
-	(print "3")
-)
-
-(script dormant falcon_load
-	(sleep 30)
-	(ai_vehicle_enter spartan_carter v_falcon "falcon_p_r1")
-	(sleep 30)
-	(ai_vehicle_enter spartan_kat v_falcon "falcon_p_r2")
-	(sleep 30)
-	(ai_vehicle_enter spartan_jorge v_falcon "falcon_p_l1")
-)
-
-(script static void test_dealthless_falcon
-	(object_create v_falcon)
-	(object_cannot_die v_falcon TRUE)
-)
-
-
-; =================================================================================================
-; DEATH SCRIPTS
-; =================================================================================================
-(script dormant death_start
-	(sleep_until (> (player_count) 0) 1)
-	(print "death test")
-	(wake death_hud)
-	(player_disable_movement FALSE)
-	(set cheat_deathless_player 1)
-	(wake cov_death_start)
-	;(wake death_hud)
-	(sleep_until (<= (unit_get_health (player0)) .01) 1)
-	(print "dead")
-	(sleep_forever death_hud)
-	(set g_pleayer_dead TRUE)
-	;(fade_out 1 1 1 0)
-	(death_anim_start)
-)
-
-(script static void death_test
-	(wake death_start)
-)
-
-(global boolean g_pleayer_dead FALSE)
-(global short g_hudtime 15)
-(script dormant death_hud
-	(sleep_until (<= (unit_get_health (player0)) .9) 1)
-	(print "fade1")
-	(fade_out 1 1 1 g_hudtime)
-	(sleep g_hudtime)
-	(if (not g_pleayer_dead)
-		(fade_in 1 1 1 g_hudtime)
-	)
-	(sleep g_hudtime)
-	
-	(sleep_until (<= (unit_get_health (player0)) .7) 1)
-	(print "fade2")
-	(fade_out 1 1 1 g_hudtime)
-	(sleep g_hudtime)
-	(if (not g_pleayer_dead)
-		(fade_in 1 1 1 g_hudtime)
-	)
-	(sleep g_hudtime)
-)
-
-
-
-(script dormant cov_death_start
-	(sleep_until
 		(begin
-			(sleep_until (<= (ai_living_count death_cov) 9) 5)
-			(ai_place death_cov)
-			(ai_place death_cov02)
-			;(>= (ai_living_count death_spartan) 1)
-			FALSE
+			(set b_spartan_spawn 0)
+			(print "troopers will spawn now")
 		)
 	)
 )
 
-(script static void death_anim_start
-	;(cinematic_enter "snap_to_white" FALSE)
-	(sleep 60)
-	;(cinematic_fade_to_white)
-	;(cinematic_enter "snap_to_white" FALSE)
-	(ai_place death_spartan)
-	;(ai_disregard (ai_get_object death_spartan) TRUE)
-	;(ai_place death_elites)
-	;(ai_erase airstrike_cov)
-	;(cs_run_command_script airstrike_cov cs_death_ai)
-	(thespian_performance_setup_and_begin vig_death "" 0)
-	
-	(camera_set_field_of_view 60 0)
-	(camera_set cam01 0)
-	(fade_in 1 1 1 30)
-	(sleep 300)
-	;(cinematic_exit "snap_from_white" FALSE)
-	(map_reset)
-)
-
-(script command_script cs_death_ai
-	(cs_enable_moving TRUE)
-	(cs_enable_moving TRUE)
-	(sleep_forever)
-)
-
-; =================================================================================================
-; BUG:phantom boost
-; =================================================================================================
-(script dormant phantom_boost_start
-	(ai_place sq_phatom)
-	;(sleep 1)
-	(cs_run_command_script sq_phatom cs_phantom_boost)
-)
-
-(script command_script cs_phantom_boost
-	;(cs_vehicle_boost TRUE) 
-	(cs_fly_by ps_bugs/fork02_goto01)
-	(cs_fly_by ps_bugs/fork02_face01)
-	
-)
-
-; =================================================================================================
-; BUG:deathless
-; =================================================================================================
-(script dormant deathless_start
-	(f_ai_place_vehicle_deathless sq_falcon)
-	;(object_cannot_take_damage (ai_vehicle_get_from_squad sq_falcon 0))
-)
-
-(script static void test_deathless
-	(wake deathless_start)
-)
-
-
-; =================================================================================================
-; BUG:banshee shoot
-; =================================================================================================
-(script dormant banshee_shoot_start
-	(ai_place banshee)
-	;(sleep 1)
-	(cs_run_command_script banshee cs_banshee_bomb)
-)
-
-(script command_script cs_banshee_bomb
-	(sleep 90)
-	;(cs_enable_looking TRUE)
-	(cs_shoot_secondary_trigger TRUE)
-	(cs_shoot_point TRUE ps_bugs/shoot)
-	;(cs_enable_moving TRUE)
-	(sleep_forever)
-)
-
-(script static void test_banshee_shoot
-	(wake banshee_shoot_start)
-)
-
-; =================================================================================================
-; BUG:Queue cs SCRIPTS
-; =================================================================================================
-(script static void queue_test
-	(ai_place grunt01)
-)
-
-(script command_script cs_grunt01
-	(print "cs0")
-	(sleep 30)
-	(cs_queue_command_script ai_current_actor cs_grunt01_queue)
-	(sleep 30)
-	(print "cs1")
-)
-
-(script command_script cs_grunt01_queue
-	(print "csq0")
-  (sleep 60)
-	(print "csq1")
-)
-
-
-; =================================================================================================
-; Combat dialog
-; =================================================================================================
-(script dormant combat_dialog_start
-	(ai_place spartan_carter)
-	(ai_place spartan_kat)
-	(ai_place spartan_jorge)
-	
-	(wake airstrike_start)
-	
-	; Teleport
-	(object_teleport_to_ai_point (player0)  ps_teleports/combat_dialog)
-)
-
-(script static void test_combat_dialog
-	(wake combat_dialog_start)
-)
-
-; =================================================================================================
-; STORY object SCRIPTS
-; =================================================================================================
-(script dormant story_object_start
-	(print "story object")
-
-)
-
-
-; =================================================================================================
-; STORY object SCRIPTS
-; =================================================================================================
-(script dormant gauss_start
-	(print "story object")
-	(ai_place sq_gauss)
-	(wake airstrike_start)
-	(wake airstrike_wraiths_start)
-	(wake airstrike_ghosts_start)
-	(game_save_immediate)
-	
-)
-
-(script static void test_gauss
-	(wake gauss_start)
-)
-
-
-; =================================================================================================
-; MISC SCRIPTS
-; =================================================================================================
-(script dormant ai_test02
-	(print "go!")
-	(wake ct_activate_nav)
-	(wake cov_start)
-	(wake aa_switch_start)
-			
-	(sleep_until g_aa_repaired)
-	(print "AA repaired")
-	(aa_turret_fire_go)
-)
-
-(script dormant cov_start
-	(sleep_until
+(script dormant sc_versus_unsc
+	(sleep_until 
 		(begin
-			(ai_place sq_cov01)
-			(sleep 100)
-			(sleep_until (<= (ai_living_count obj_covenant) 2))
-			g_aa_repaired))
-)
-
-(script dormant place_falcon
-	(object_create sc_falcon)
-	(sleep 120)
-	(object_destroy sc_falcon)
-)
-
-(script command_script cs_fork
-	(f_load_fork_cargo (ai_vehicle_get ai_current_actor) "small" ghost ghost02 none)
-	(sleep 90)
-	(f_unload_fork_cargo (ai_vehicle_get ai_current_actor) "small02")
-)
-
-; =================================================================================================
-; WRAITH SCRIPTS
-; =================================================================================================
-(script static void test_wraith
-	(ai_place airstrike_wraiths)
-)
-
-; =================================================================================================
-; AIRSTRIKE SCRIPTS
-; =================================================================================================
-(script dormant test_airstrike
-	(wake airstrike_start)
-	(wake airstrike_wraiths_start)
-	;(wake give_equipment_start)
-)
-
-(script dormant airstrike_start
-	(sleep_until (> (player_count) 0) 1)
-	(sleep_until
-		(begin
-			(sleep_until (<= (ai_living_count airstrike_cov) 5) 5)
-			(ai_place airstrike_cov)
-			FALSE
-		)
-	)
-)
-
-(script dormant airstrike_ghosts_start
-	(sleep_until (> (player_count) 0) 1)
-	(sleep_until
-		(begin
-			(sleep_until (<= (ai_living_count airstrike_ghosts) 1) 5)
-			(ai_place airstrike_ghosts)
-			FALSE
-		)
-	)
-)
-
-(script dormant airstrike_wraiths_start
-	(sleep_until (> (player_count) 0) 1)
-	(sleep_until
-		(begin
-			(sleep_until (<= (ai_living_count airstrike_wraiths) 0) 5)
-			(sleep 60)
-			(ai_place airstrike_wraiths)
-			FALSE
-		)
-	)
-)
-
-(script dormant give_equipment_start
-	(sleep_until
-		(begin
-			(sleep_until (> (player_count) 0) 1)
-			(sleep_until (<= (unit_get_total_grenade_count (player0)) 0) 1)
-			(print "airstrike used")
-			(airstrike_effect_start)
-			;(sleep (* 30 5))
-			(unit_add_equipment (player0) add_grenade TRUE TRUE)
-			(print "adding airstrike")
-			FALSE
-		)
-	)
-)
-
-(script static void airstrike_effect_start
-	(print "airstrike_called")
-	(sleep (* 30 2))
-	(sound_impulse_start sound\dialog\levels\m10\mission\robot\m10_0100_emi NONE 1)
-	(sound_impulse_start sound\device_machines\040vc_longsword\start NONE 1)
-	(sleep (* 30 3))
-	(print "spawning longsword")
-	(object_create dm_ls01)
-	(f_ls_flyby dm_ls01)
-	(print "airstrike_done")
-	(sleep (* 30 2))
-)
-
-(script static void (f_ls_flyby (device d))
-	(device_animate_position d 0 0.0 0.0 0.0 TRUE)
-	(device_set_position_immediate d 0)
-	(device_set_power d 0)
-	(sleep 1)
-	(device_set_position_track d device:position 0)
-	(device_animate_position d 0.5 7.0 0.1 0.1 TRUE)
-)
-
-
-; =================================================================================================
-; HUD TEST SCRIPTS
-; =================================================================================================
-(global short hud_flash_blip_total 5)
-(global short hud_flash_blip_count 0)
-(global short hud_flash_fast 2)
-(global short hud_flash_slow 2)
-(global short hud_flash_final 30)
-
-(script static void (hud_flash_blip_single (object_name hud_object))
-	(object_create hud_object)
-	(set chud_debug_highlight_object hud_object)
-	(sound_impulse_start sound\game_sfx\ui\transition_beeps NONE 1)
-	(sleep hud_flash_fast)
-	(object_destroy hud_object)
-	(sleep hud_flash_slow)
-)
-
-
-
-(script static void (hud_flash_blip_object (object_name hud_object))
-	(set chud_debug_highlight_object_color_red 1)
-	(set chud_debug_highlight_object_color_green 1)
-	(set chud_debug_highlight_object_color_blue 0)
-
-
-	(sleep_until
-		(begin
-			(hud_flash_blip_single hud_object)
-			(set hud_flash_blip_count (+ 1 hud_flash_blip_count))
-			(>= hud_flash_blip_count hud_flash_blip_total)
-		)
-	1)
-	
-	(set hud_flash_blip_count 0)
-)
-
-(script static void test_hud
-	(hud_flash_blip_object sc_hud_test)
-	
-	(sleep 30)
-)
-
-; =================================================================================================
-; AA TURRET SCRIPTS
-; =================================================================================================
-(global boolean aa_kat_is_repairing FALSE)
-(global short aa_repair_time_seconds 45)
-(global short aa_repair_time_1st_complete 35)
-(global short aa_repair_time_2nd_complete 20)
-(script dormant aa_switch_countdown_start
-	(sleep_until
-		(begin
-			(sleep_until aa_kat_is_repairing)
-			(set aa_repair_time_seconds (- aa_repair_time_seconds 1))
-			(<= aa_repair_time_seconds 0)
-		))
-	(print "setting aa_repaired")
-	(set g_aa_repaired TRUE)
-	(ct_objective_complete_go)
-)
-
-(script dormant aa_switch_start
-	(sleep_until (>= (device_get_position control_aa_button) 1) 5)
-	(wake aa_switch_countdown_start)
-	(wake place_falcon)
-	(ai_place spartan)
-	(ai_cannot_die spartan TRUE)
-	
-	(sleep_until
-		(begin
-			(cs_run_command_script spartan cs_kat_repair)
-			(sleep_until 
-				(or
-					g_aa_repaired
-					(not (cs_command_script_running spartan cs_kat_repair))
-				))
-			
-			(hud_unmark_object (ai_get_object spartan))
-			(object_destroy fx_rapair01)
-			(object_destroy fx_rapair02)
-			(object_destroy fx_rapair03)
-			(set aa_kat_is_repairing FALSE)
-			(print "aa_repaired OR cs broken")
-			
-			(if (not g_aa_repaired)
+			(sleep_until (<= (ai_task_count obj_versus/mg_unsc_gate) 3) 1)
+			(if (= b_spartan_spawn 0)
 				(begin
-					(if (>= aa_repair_time_seconds aa_repair_time_1st_complete)
-						(sleep_until (not (volume_test_objects tv_aa_perimeter01 (ai_actors sq_cov01))) 5))
+						(print "spawning troopers")
+						(ai_place sq_versus_unsc/trooper01)
+						(ai_place sq_versus_unsc/trooper02)
+						(ai_place sq_versus_unsc/trooper03)
+						(ai_place sq_versus_unsc/trooper04)
+						(garbage_collect_now)
+				)
+				(begin
+						(print "spawning spartans")
+						(ai_place sq_versus_unsc/spartan01)
+							(ai_cannot_die sq_versus_unsc/spartan01 1)
+						(ai_place sq_versus_unsc/spartan02)
+							(ai_cannot_die sq_versus_unsc/spartan02 1)
+						(if (= b_full_spartans 1)
+							(begin
+								(ai_place sq_versus_unsc/spartan03)
+									(ai_cannot_die sq_versus_unsc/spartan03 1)
+								(ai_place sq_versus_unsc/spartan04)
+									(ai_cannot_die sq_versus_unsc/spartan04 1)
+								(ai_place sq_versus_unsc/spartan05)
+									(ai_cannot_die sq_versus_unsc/spartan05 1)
+							)
+						)
+						(garbage_collect_now)
+				)
+			)
+		0)
+	1)
+)
+
+(script dormant sc_versus_covenant
+	(sleep_until
+		(begin
+			(sleep_until (<= (ai_task_count obj_versus/mg_covenant_gate) 3) 1)
+				(print "spawning covenant")
+				(if (>= s_covenant 4)
 						(begin
-							(if (>= aa_repair_time_seconds aa_repair_time_2nd_complete)
-								(sleep_until (not (volume_test_objects tv_aa_perimeter02 (ai_actors sq_cov01))) 5)
-								(sleep_until (not (volume_test_objects tv_aa_perimeter03 (ai_actors sq_cov01))) 5)
-							))
-				))
-
-			g_aa_repaired))
-
-		
-		(hud_unmark_object (ai_get_object spartan))
-		(cs_run_command_script spartan cs_abort)
+							(ai_place sq_versus_covenant02)
+							(set s_covenant 0)
+						)
+					(begin
+						(ai_place sq_versus_covenant)
+						(set s_covenant (+ s_covenant 1))
+					)
+				)
+				(garbage_collect_unsafe)
+		0)
+	1)
 )
+
+(script static void full_spartans
+	(if (= b_full_spartans 0)
+		(begin
+			(set b_full_spartans 1)
+			(print "full group of spartans will spawn now")
+		)
+		(begin
+			(set b_full_spartans 0)
+			(print "only two spartans will spawn now")
+		)
+	)
+)
+
+(script static void sv_weapon_spawn
+	(object_create_anew ar01)
+	(object_create_anew dmr01)
+	(object_create_anew frag01)
+	(object_create_anew frag02)
+)
+
+(script dormant sc_input
+	(sleep_until
+		(begin
+			(if  (= s_spawn 0)
+				(begin
+					(print " ************* ")
+					(print "waiting for input")
+					(print "hit 1 for skirmishers")
+					(print "or 2 for elites")
+					(print "or 3 for marines")
+					(print "or 4 for grunts")
+					(print "or 5 for jackals")
+					(print "or 6 for buggers")
+					(print "or 7 for brutes")
+					(print "or 8 for spartans")
+					(print "or 9 for hunters")
+					(print "or 10 for engineers")
+					(print "or 11 for leadership test")
+					(print "or 12 for mule")
+				)
+			)
+			(sleep 200)
+		0)
+	1)
+)
+
+(script dormant sc_spawner
+	(sleep_until
+		(begin
+			(sleep_until 
+				(and
+					(= (ai_task_count obj_bottom/main_gate) 0) 
+					(= (ai_task_count obj_buggers/main_gate) 0) 				
+					(= b_spartan 0)
+				)	
+			1)
+				(if (= s_spawn 1)
+					(begin
+						(cond
+							((= s_weapon_type 0)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Skirmisher plasma")												
+												(if (= b_double 0)
+													(ai_place sq_skirmisher01/skirmisher_plasma)
+													(begin
+														(ai_place sq_skirmisher01/skirmisher_plasma)
+														(ai_place sq_skirmisher01/skirmisher_plasma)
+														(ai_place sq_skirmisher01/skirmisher_plasma)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Major plasma")
+												(ai_place sq_skirmisher01/major_plasma)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Murmillone plasma")
+												(ai_place sq_skirmisher01/murmillone_plasma)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Commando plasma")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)																				
+										((>= s_character_type 4)
+											(begin
+												(print "No Champion plasma")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)
+									)																				
+								)
+							)
+							((= s_weapon_type 1)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Skirmisher needler")
+												(ai_place sq_skirmisher01/skirmisher_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Major needler")
+												(ai_place sq_skirmisher01/major_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Murmillone needler")
+												(ai_place sq_skirmisher01/murmillone_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Commando needler")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)																				
+										((>= s_character_type 4)
+											(begin
+												(print "No Champion needler")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)
+									)																				
+								)
+							)
+							((= s_weapon_type 2)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "No Skirmisher dual")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Major dual")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Murmillone dual")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Commando dual")
+												(ai_place sq_skirmisher01/commando_dual)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)																				
+										((>= s_character_type 4)
+											(begin
+												(print "Champion dual")
+												(ai_place sq_skirmisher01/champion_dual)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)
+									)																				
+								)
+							)
+							((= s_weapon_type 3)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Skirmisher needle rifle")
+												(ai_place sq_skirmisher01/skirmisher_needle_rifle)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Major needle rifle")
+												(ai_place sq_skirmisher01/major_needle_rifle)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Murmillone needle rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Commando needle rifle")
+												(ai_place sq_skirmisher01/commando_needle_rifle)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)																				
+										((>= s_character_type 4)
+											(begin
+												(print "Champion needle_rifle")
+												(ai_place sq_skirmisher01/champion_needle_rifle)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)
+									)																				
+								)
+							)
+							((>= s_weapon_type 4)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Skirmisher focus rifle")
+												(ai_place sq_skirmisher01/skirmisher_focus_rifle)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Major focus")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Murmillone focus")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Commando focus rifle")
+												(ai_place sq_skirmisher01/commando_focus_rifle)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)																				
+										((>= s_character_type 4)
+											(begin
+												(print "Champion focus rifle")
+												(ai_place sq_skirmisher01/champion_focus_rifle)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)
+									)																				
+								)
+							)													
+						)
+						(if 
+							(and
+								(= b_weapon 1)
+								(or
+									(= s_character_type 0)
+									(= b_character 0)
+								)
+							)	
+							(if (>= s_weapon_type 4)
+								(set s_weapon_type 0)
+								(set s_weapon_type (+ s_weapon_type 1))
+							)
+						)						
+					)
+				)	
+				(if (= s_spawn 2)
+					(begin
+						(cond
+							((= s_weapon_type 0)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor plasma")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_plasma)
+													(begin
+														(ai_place sq_elite01/minor_plasma)
+														(ai_place sq_elite01/minor_plasma)
+													)
+												)
+												(sv_buddies)												
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Officer plasma")
+												(if (= b_double 0)
+													(ai_place sq_elite01/officer_plasma)
+													(begin
+														(ai_place sq_elite01/officer_plasma)
+														(ai_place sq_elite01/officer_plasma)
+													)
+												)												
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Ultra plasma")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Jetpack plasma")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "Specop plasma")
+												(if (= b_double 0)
+													(ai_place sq_elite01/specop_plasma)
+													(begin
+														(ai_place sq_elite01/specop_plasma)
+														(ai_place sq_elite01/specop_plasma)
+													)
+												)												
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)											
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "No General plasma")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "No Story plasma")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 1)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor dual")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_dual)
+													(begin
+														(ai_place sq_elite01/minor_dual)
+														(ai_place sq_elite01/minor_dual)
+													)
+												)
+												(sv_buddies)												
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Officer dual")												
+												(if (= b_double 0)
+													(ai_place sq_elite01/officer_dual)
+													(begin
+														(ai_place sq_elite01/officer_dual)
+														(ai_place sq_elite01/officer_dual)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Ultra dual")												
+												(if (= b_double 0)
+													(ai_place sq_elite01/ultra_dual)
+													(begin
+														(ai_place sq_elite01/ultra_dual)
+														(ai_place sq_elite01/ultra_dual)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Jetpack dual")												
+												(if (= b_double 0)
+													(ai_place sq_elite01/jetpack_dual)
+													(begin
+														(ai_place sq_elite01/jetpack_dual)
+														(ai_place sq_elite01/jetpack_dual)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "Specop dual")
+												(if (= b_double 0)
+													(ai_place sq_elite01/specop_dual)
+													(begin
+														(ai_place sq_elite01/specop_dual)
+														(ai_place sq_elite01/specop_dual)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "No General Dual")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "Story dual")
+												(ai_place sq_elite01/story_dual)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 2)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor dualdword")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_dualsword)
+													(begin
+														(ai_place sq_elite01/minor_dualsword)
+														(ai_place sq_elite01/minor_dualsword)
+													)
+												)
+												(sv_buddies)												
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Officer Dualsword")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Ultra dualsword")
+												(if (= b_double 0)
+													(ai_place sq_elite01/ultra_dualsword)
+													(begin
+														(ai_place sq_elite01/ultra_dualsword)
+														(ai_place sq_elite01/ultra_dualsword)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Jetpack dualsword")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "Specop dualsword")
+												(if (= b_double 0)
+													(ai_place sq_elite01/specop_dualsword)
+													(begin
+														(ai_place sq_elite01/specop_dualsword)
+														(ai_place sq_elite01/specop_dualsword)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "General Dualsword")
+												(if (= b_double 0)
+													(ai_place sq_elite01/general_dualsword)
+													(begin
+														(ai_place sq_elite01/general_dualsword)
+														(ai_place sq_elite01/general_dualsword)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)												
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "No Story dualsword")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 3)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor Needler")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_needler)
+													(begin
+														(ai_place sq_elite01/minor_needler)
+														(ai_place sq_elite01/minor_needler)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Officer Needler")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Ultra Needler")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Jetpack Needler")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "No Specop Needler")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "No General Needler")											
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "No Story Needler")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 4)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor Repeater")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_repeater)
+													(begin
+														(ai_place sq_elite01/minor_repeater)
+														(ai_place sq_elite01/minor_repeater)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Officer Repeater")
+												(if (= b_double 0)
+													(ai_place sq_elite01/officer_repeater)
+													(begin
+														(ai_place sq_elite01/officer_repeater)
+														(ai_place sq_elite01/officer_repeater)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Ultra repeater")
+												(if (= b_double 0)
+													(ai_place sq_elite01/ultra_repeater)
+													(begin
+														(ai_place sq_elite01/ultra_repeater)
+														(ai_place sq_elite01/ultra_repeater)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Jetpack repeater")
+												(if (= b_double 0)
+													(ai_place sq_elite01/jetpack_repeater)
+													(begin
+														(ai_place sq_elite01/jetpack_repeater)
+														(ai_place sq_elite01/jetpack_repeater)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "No Specop repeater")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "No General Repeater")										
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "No Story Repeater")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 5)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor Concussion")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_concussion)
+													(begin
+														(ai_place sq_elite01/minor_concussion)
+														(ai_place sq_elite01/minor_concussion)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Officer concussion")
+												(if (= b_double 0)
+													(ai_place sq_elite01/officer_concussion)
+													(begin
+														(ai_place sq_elite01/officer_concussion)
+														(ai_place sq_elite01/officer_concussion)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Ultra concussion")
+												(if (= b_double 0)
+													(ai_place sq_elite01/ultra_concussion)
+													(begin
+														(ai_place sq_elite01/ultra_concussion)
+														(ai_place sq_elite01/ultra_concussion)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Jetpack concussion")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "No Specop concussion")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "General concussion")
+												(if (= b_double 0)
+													(ai_place sq_elite01/general_concussion)
+													(begin
+														(ai_place sq_elite01/general_concussion)
+														(ai_place sq_elite01/general_concussion)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)									
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "Story concussion")
+												(if (= b_double 0)
+													(ai_place sq_elite01/story_concussion)
+													(begin
+														(ai_place sq_elite01/story_concussion)
+														(ai_place sq_elite01/story_concussion)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)	
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 6)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor needle rifle")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_needlerifle)
+													(begin
+														(ai_place sq_elite01/minor_needlerifle)
+														(ai_place sq_elite01/minor_needlerifle)
+													)
+												)
+												(sv_buddies)												
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Officer Needle Rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Ultra Needle Rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Jetpack Needle Rifle")
+												(if (= b_double 0)
+													(ai_place sq_elite01/jetpack_needlerifle)
+													(begin
+														(ai_place sq_elite01/jetpack_needlerifle)
+														(ai_place sq_elite01/jetpack_needlerifle)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "No Specop Needle Rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "No General Needle Rifle")										
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "Story Needle Rifle")
+												(if (= b_double 0)
+													(ai_place sq_elite01/story_needlerifle)
+													(begin
+														(ai_place sq_elite01/story_needlerifle)
+														(ai_place sq_elite01/story_needlerifle)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 7)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor focus rifle")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_focus)
+													(begin
+														(ai_place sq_elite01/minor_focus)
+														(ai_place sq_elite01/minor_focus)
+													)
+												)
+												(sv_buddies)												
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Officer Focus Rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Ultra Focus Rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Jetpack Focus Rifle")
+												(if (= b_double 0)
+													(ai_place sq_elite01/jetpack_focus)
+													(begin
+														(ai_place sq_elite01/jetpack_focus)
+														(ai_place sq_elite01/jetpack_focus)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "No Specop Focus Rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "No General Focus Rifle")										
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "No Story Focus Rifle")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 8)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor plasma turret")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_turret)
+													(begin
+														(ai_place sq_elite01/minor_turret)
+														(ai_place sq_elite01/minor_turret)
+													)
+												)
+												(sv_buddies)												
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Officer Plasma Turret")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Ultra Plasma Turret")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Jetpack Plasma Turret")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "No Specop Plasma Turret")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "General Plasma Turret")	
+												(if (= b_double 0)
+													(ai_place sq_elite01/general_turret)
+													(begin
+														(ai_place sq_elite01/general_turret)
+														(ai_place sq_elite01/general_turret)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)																					
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "No Story Plasma Turret")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 9)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor flak cannon")
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_flak)
+													(begin
+														(ai_place sq_elite01/minor_flak)
+														(ai_place sq_elite01/minor_flak)
+													)
+												)
+												(sv_buddies)												
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Officer Flak Cannon")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Ultra Flak Cannon")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Jetpack Flak Cannon")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "No Specop Flak Cannon")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "General Flak Cannon")		
+												(if (= b_double 0)
+													(ai_place sq_elite01/general_flak)
+													(begin
+														(ai_place sq_elite01/general_flak)
+														(ai_place sq_elite01/general_flak)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)																					
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "No Story Flak Cannon")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 10)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor plasma launcher")		
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_launcher)
+													(begin
+														(ai_place sq_elite01/minor_launcher)
+														(ai_place sq_elite01/minor_launcher)
+													)
+												)
+												(sv_buddies)												
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Officer Plasma Launcher")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Ultra Plasma Launcher")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Jetpack Plasma Launcher")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "No Specop Plasma Launcher")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "General Plasma Launcher")	
+												(if (= b_double 0)
+													(ai_place sq_elite01/general_launcher)
+													(begin
+														(ai_place sq_elite01/general_launcher)
+														(ai_place sq_elite01/general_launcher)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)																							
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "No Story Repeater")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)
+							((= s_weapon_type 11)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor sword")	
+												(if (= b_double 0)
+													(ai_place sq_elite01/minor_sword)
+													(begin
+														(ai_place sq_elite01/minor_sword)
+														(ai_place sq_elite01/minor_sword)
+													)
+												)
+												(sv_buddies)												
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Officer Sword")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Ultra Sword")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "No Jetpack Sword")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 4)
+											(begin
+												(print "Specop Sword")	
+												(if (= b_double 0)
+													(ai_place sq_elite01/specop_sword)
+													(begin
+														(ai_place sq_elite01/specop_sword)
+														(ai_place sq_elite01/specop_sword)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)													
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)		
+										((= s_character_type 5)
+											(begin
+												(print "General Sword")		
+												(if (= b_double 0)
+													(ai_place sq_elite01/general_sword)
+													(begin
+														(ai_place sq_elite01/general_sword)
+														(ai_place sq_elite01/general_sword)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)											
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 6)
+											(begin
+												(print "Story Sword")		
+												(if (= b_double 0)
+													(ai_place sq_elite01/story_sword)
+													(begin
+														(ai_place sq_elite01/story_sword)
+														(ai_place sq_elite01/story_sword)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)		
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)										
+									)																				
+								)
+							)																		
+						)
+						(if 
+							(and
+								(= b_weapon 1)
+								(or
+									(= s_character_type 0)
+									(= b_character 0)
+								)
+							)	
+							(if (>= s_weapon_type 12)
+								(set s_weapon_type 0)
+								(set s_weapon_type (+ s_weapon_type 1))
+							)
+						)						
+					)
+				)	
+				(if (= s_spawn 3)
+					(begin
+						(cond
+							((= s_weapon_type 0)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Marine Assault Rifle")	
+												(if (= b_double 0)
+													(ai_place sq_marine01/marine_assault)
+													(begin
+														(ai_place sq_marine01/marine_assault)
+														(ai_place sq_marine01/marine_assault)
+														(ai_place sq_marine01/marine_assault)
+														(ai_place sq_marine01/marine_assault)
+														(ai_place sq_marine01/marine_assault)
+													)
+												)
+												(sv_buddies)	
+												(cleanup)											
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 1)
+											(begin
+												(print "ODST Assault Rifle")	
+													(if (= b_double 0)
+														(ai_place sq_marine01/odst_assault)
+														(begin
+															(ai_place sq_marine01/odst_assault)
+															(ai_place sq_marine01/odst_assault)
+														)
+													)
+												(sv_buddies)	
+												(cleanup)		
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)																			
+									)
+								)
+								(if (= b_weapon 1)
+									(set s_weapon_type (+ s_weapon_type 1))
+								)
+							)
+							((= s_weapon_type 1)
+								(begin
+									(begin
+										(print "Marine Concussion Rifle")
+										(ai_place sq_marine01/marine_concussion)
+										(sv_buddies)												
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)	
+									)																			
+								)
+							)							
+							((= s_weapon_type 2)
+								(begin
+									(begin
+										(print "Marine DMR")
+										(ai_place sq_marine01/marine_dmr)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)						
+							((= s_weapon_type 3)
+								(begin
+									(begin
+										(print "Marine Flak Cannon")
+										(ai_place sq_marine01/marine_flak)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)						
+							((= s_weapon_type 4)
+								(begin
+									(begin
+										(print "Marine Focus Rifle")
+										(ai_place sq_marine01/marine_focus)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 5)
+								(begin
+									(begin
+										(print "Marine Grenade Launcher")
+										(ai_place sq_marine01/marine_grenade_launcher)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 6)
+								(begin
+									(begin
+										(print "Marine Magnum")
+										(ai_place sq_marine01/marine_magnum)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 7)
+								(begin
+									(begin
+										(print "Marine Needle Rifle")
+										(ai_place sq_marine01/marine_needle_rifle)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 8)
+								(begin
+									(begin
+										(print "Marine Needler")
+										(ai_place sq_marine01/marine_needler)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 9)
+								(begin
+									(begin
+										(print "Marine Plasma Launcher")
+										(ai_place sq_marine01/marine_plasma_launcher)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 10)
+								(begin
+									(begin
+										(print "Marine Plasma Pistol")
+										(ai_place sq_marine01/marine_plasma_pistol)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 11)
+								(begin
+									(begin
+										(print "Marine Plasma Repeater")
+										(ai_place sq_marine01/marine_plasma_repeater)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 12)
+								(begin
+									(begin
+										(print "Marine Plasma Rifle")
+										(ai_place sq_marine01/marine_plasma_rifle)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 13)
+								(begin
+									(begin
+										(print "Marine Rocket Launcher")
+										(ai_place sq_marine01/marine_rocket_launcher)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 14)
+								(begin
+									(begin
+										(print "Marine Shotgun")
+										(ai_place sq_marine01/marine_shotgun)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 15)
+								(begin
+									(begin
+										(print "Marine Sniper Rifle")
+										(ai_place sq_marine01/marine_sniper_rifle)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 16)
+								(begin
+									(begin
+										(print "Marine Spartan Laser")
+										(ai_place sq_marine01/marine_spartan_laser)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type (+ s_weapon_type 1))
+										)
+									)
+								)
+							)
+							((= s_weapon_type 17)
+								(begin
+									(begin
+										(print "Marine Spike Rifle")
+										(ai_place sq_marine01/marine_spike_rifle)
+										(sv_buddies)
+										(cleanup)
+										(if (= b_weapon 1)
+											(set s_weapon_type 0)
+										)	
+									)
+								)
+							)						
+						)							
+					)
+				)
+				(if (= s_spawn 4)
+					(begin
+						(cond
+							((= s_weapon_type 0)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor plasma")
+												(ai_place sq_grunt01/grunt_plasma)
+												(ai_place sq_grunt01/grunt_plasma)
+												(ai_place sq_grunt01/grunt_plasma)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Major plasma")
+												(ai_place sq_grunt01/major_plasma)
+												(ai_place sq_grunt01/major_plasma)
+												(ai_place sq_grunt01/major_plasma)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Ultra plasma")
+												(ai_place sq_grunt01/ultra_plasma)
+												(ai_place sq_grunt01/ultra_plasma)
+												(ai_place sq_grunt01/ultra_plasma)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Spec Op plasma")
+												(ai_place sq_grunt01/spec_plasma)
+												(ai_place sq_grunt01/spec_plasma)
+												(ai_place sq_grunt01/spec_plasma)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 4)
+											(begin
+												(print "Heavy plasma")
+												(ai_place sq_grunt01/heavy_plasma)
+												(ai_place sq_grunt01/heavy_plasma)
+												(ai_place sq_grunt01/heavy_plasma)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)																				
+									)																				
+								)
+							)		
+							((= s_weapon_type 1)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor needler")
+												(ai_place sq_grunt01/grunt_needler)
+												(ai_place sq_grunt01/grunt_needler)
+												(ai_place sq_grunt01/grunt_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Major needler")
+												(ai_place sq_grunt01/major_needler)
+												(ai_place sq_grunt01/major_needler)
+												(ai_place sq_grunt01/major_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Ultra needler")
+												(ai_place sq_grunt01/ultra_needler)
+												(ai_place sq_grunt01/ultra_needler)
+												(ai_place sq_grunt01/ultra_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Spec Op needler")
+												(ai_place sq_grunt01/spec_needler)
+												(ai_place sq_grunt01/spec_needler)
+												(ai_place sq_grunt01/spec_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 4)
+											(begin
+												(print "Heavy needler")
+												(ai_place sq_grunt01/heavy_needler)
+												(ai_place sq_grunt01/heavy_needler)
+												(ai_place sq_grunt01/heavy_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)																				
+									)																				
+								)
+							)		
+							((>= s_weapon_type 2)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor flak")
+												(ai_place sq_grunt01/grunt_flak)
+												(ai_place sq_grunt01/grunt_flak)
+												(ai_place sq_grunt01/grunt_flak)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Major flak")
+												(ai_place sq_grunt01/major_flak)
+												(ai_place sq_grunt01/major_flak)
+												(ai_place sq_grunt01/major_flak)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Ultra flak")
+												(ai_place sq_grunt01/ultra_flak)
+												(ai_place sq_grunt01/ultra_flak)
+												(ai_place sq_grunt01/ultra_flak)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((= s_character_type 3)
+											(begin
+												(print "Spec Op flak")
+												(ai_place sq_grunt01/spec_flak)
+												(ai_place sq_grunt01/spec_flak)
+												(ai_place sq_grunt01/spec_flak)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)												
+											)
+										)
+										((>= s_character_type 4)
+											(begin
+												(print "Heavy flak")
+												(ai_place sq_grunt01/heavy_flak)
+												(ai_place sq_grunt01/heavy_flak)
+												(ai_place sq_grunt01/heavy_flak)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)												
+											)
+										)																				
+									)																				
+								)
+							)																									
+						)
+						(if 
+							(and
+								(= b_weapon 1)
+								(or
+									(= s_character_type 0)
+									(= b_character 0)
+								)
+							)	
+							(if (>= s_weapon_type 2)
+								(set s_weapon_type 0)
+								(set s_weapon_type (+ s_weapon_type 1))
+							)
+						)						
+					)
+				)	
+				(if (= s_spawn 5)
+					(begin
+						(cond
+							((= s_weapon_type 0)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor plasma")
+												(ai_place sq_jackal01/jackal_plasma)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Major plasma")
+												(ai_place sq_jackal01/major_plasma)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)	
+										((= s_character_type 2)
+											(begin
+												(print "No Sniper plasma")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)																													
+									)																				
+								)
+							)		
+							((= s_weapon_type 1)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Minor needler")
+												(ai_place sq_jackal01/jackal_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Major needler")
+												(ai_place sq_jackal01/major_needler)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Sniper needler")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)																				
+									)																				
+								)
+							)	
+							((= s_weapon_type 2)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "No Minor needle rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Major needle rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Sniper needle rifle")
+												(ai_place sq_jackal01/sniper_needle_rifle)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)																	
+									)																				
+								)
+							)	
+							((>= s_weapon_type 3)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "No Minor focus rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "No Major focus rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Sniper focus rifle")
+												(ai_place sq_jackal01/sniper_focus_rifle)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)																	
+									)																				
+								)
+							)					
+						)
+						(if 
+							(and
+								(= b_weapon 1)
+								(or
+									(= s_character_type 0)
+									(= b_character 0)
+								)
+							)
+							(if (>= s_weapon_type 3)
+								(set s_weapon_type 0)
+								(set s_weapon_type (+ s_weapon_type 1))
+							)						
+						)						
+					)
+				)	
+				(if (= s_spawn 6)
+					(begin
+						(ai_place sq_bugger01)
+						(cleanup)
+					)
+				)		
+				(if (= s_spawn 7)
+					(begin
+						(cond
+							((= s_weapon_type 0)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Brute spiker")
+												(if (= b_double 0)
+													(ai_place sq_brute01/brute_spike)
+													(begin
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Captain spiker")
+												(if (= b_double 0)
+													(ai_place sq_brute01/captain_spike)
+													(begin
+														(ai_place sq_brute01/captain_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Weapon spiker")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((>= s_character_type 3)
+											(begin
+												(print "No Armor spiker")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)																				
+									)
+								)																				
+							)
+							((= s_weapon_type 1)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "Brute plasma repeater")
+												(if (= b_double 0)
+													(ai_place sq_brute01/brute_repeater)
+													(begin
+														(ai_place sq_brute01/brute_repeater)
+														(ai_place sq_brute01/brute_repeater)
+														(ai_place sq_brute01/brute_repeater)
+														(ai_place sq_brute01/brute_repeater)
+														(ai_place sq_brute01/brute_repeater)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Captain plasma repeater")
+												(if (= b_double 0)
+													(ai_place sq_brute01/captain_repeater)
+													(begin
+														(ai_place sq_brute01/captain_repeater)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Weapon repeater")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((>= s_character_type 3)
+											(begin
+												(print "No Armor repeater")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)		
+									)
+								)																				
+							)
+							((= s_weapon_type 2)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "No Brute concussion rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Captain concussion rifle")
+												(if (= b_double 0)
+													(ai_place sq_brute01/captain_concussion)
+													(begin
+														(ai_place sq_brute01/captain_concussion)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Weapon concussion rifle")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((>= s_character_type 3)
+											(begin
+												(print "No Armor concussion rifle")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)		
+									)
+								)																				
+							)							
+							((= s_weapon_type 3)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "No Brute flak")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "no Captain flak")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Weapon flak")
+												(if (= b_double 0)
+													(ai_place sq_brute01/weapon_flak)
+													(begin
+														(ai_place sq_brute01/weapon_flak)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((>= s_character_type 3)
+											(begin
+												(print "No Armor flak")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)
+									)
+								)																				
+							)								
+							((= s_weapon_type 4)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "No Brute plasma launcher")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "no Captain plasma launcher")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Weapon plasma launcher")
+												(if (= b_double 0)
+													(ai_place sq_brute01/weapon_launcher)
+													(begin
+														(ai_place sq_brute01/weapon_launcher)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((>= s_character_type 3)
+											(begin
+												(print "No Armor plasma launcher")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)
+									)
+								)																				
+							)							
+							((= s_weapon_type 5)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "No Brute plasma turret")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "no Captain plasma turret")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "Weapon plasma turret")
+												(if (= b_double 0)
+													(ai_place sq_brute01/weapon_turret)
+													(begin
+														(ai_place sq_brute01/weapon_turret)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((>= s_character_type 3)
+											(begin
+												(print "No Armor plasma turret")
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)
+									)
+								)																				
+							)							
+							((= s_weapon_type 6)
+								(begin
+									(cond
+										((= s_character_type 0)
+											(begin
+												(print "No Brute hammer")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 1)
+											(begin
+												(print "Captain hammer")
+												(if (= b_double 0)
+													(ai_place sq_brute01/captain_hammer)
+													(begin
+														(ai_place sq_brute01/captain_hammer)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((= s_character_type 2)
+											(begin
+												(print "No Weapon hammer")
+												(if (= b_character 1)
+													(set s_character_type (+ s_character_type 1))
+												)	
+											)
+										)
+										((>= s_character_type 3)
+											(begin
+												(print "Armor hammer")
+												(if (= b_double 0)
+													(ai_place sq_brute01/armor_hammer)
+													(begin
+														(ai_place sq_brute01/armor_hammer)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+														(ai_place sq_brute01/brute_spike)
+													)
+												)
+												(cleanup)
+												(if (= b_character 1)
+													(set s_character_type 0)
+												)	
+											)
+										)
+									)
+								)																				
+							)												
+						)	
+						(if 
+							(and
+								(= b_weapon 1)
+								(= s_character_type 0)
+							)
+							(if (>= s_weapon_type 6)
+								(set s_weapon_type 0)
+								(set s_weapon_type (+ s_weapon_type 1))
+							)
+						)						
+					)
+				)		
+				(if (= s_spawn 8)
+					(begin					
+						(wake sc_spartan_health_check)
+						(cond
+							((= s_character_type 0)
+								(begin
+									(print "carter")
+									(ai_place sq_spartan01/carter)
+									(sleep 1)
+									(ai_cannot_die sq_spartan01 1)
+									(cleanup)
+									(if (= b_character 1)
+										(set s_character_type (+ s_character_type 1))
+									)	
+								)
+							)
+							((= s_character_type 1)
+								(begin
+									(print "kat")							
+									(ai_place sq_spartan01/kat)
+									(sleep 1)
+									(ai_cannot_die sq_spartan01 1)
+									(cleanup)
+									(if (= b_character 1)
+										(set s_character_type (+ s_character_type 1))
+									)	
+								)
+							)
+							((= s_character_type 2)
+								(begin
+									(print "emile")
+									(ai_place sq_spartan01/emile)
+									(sleep 1)
+									(ai_cannot_die sq_spartan01 1)
+									(cleanup)
+									(if (= b_character 1)
+										(set s_character_type (+ s_character_type 1))
+									)	
+								)
+							)
+							((= s_character_type 3)
+								(begin
+									(print "jun")
+									(ai_place sq_spartan01/jun)
+									(sleep 1)
+									(ai_cannot_die sq_spartan01 1)
+									(cleanup)
+									(if (= b_character 1)
+										(set s_character_type (+ s_character_type 1))
+									)	
+								)
+							)																				
+							((>= s_character_type 4)
+								(begin
+									(print "jorge")
+									(ai_place sq_spartan01/jorge)
+									(sleep 1)
+									(ai_cannot_die sq_spartan01 1)
+									(cleanup)
+									(if (= b_character 1)
+										(set s_character_type 0)
+									)	
+								)
+							)
+						)	
+					)
+				)	
+				(if (= s_spawn 9)
+					(begin
+						(cond
+							((= s_character_type 0)
+								(begin
+									(print "hunter")
+									(ai_place sq_hunter01/minor)
+									(sleep 1)
+									(cleanup)
+									(if (= b_character 1)
+										(set s_character_type 0)
+									)	
+								)
+							)
+						)
+					)
+				)		
+				(if (= s_spawn 10)
+					(begin
+						(cond
+							((= s_character_type 0)
+								(begin
+									(print "engineer and grunts")
+									(ai_place sq_engineer01)
+									(sleep 1)
+									(cleanup)
+									(if (= b_character 1)
+										(set s_character_type 0)
+									)	
+								)
+							)
+						)
+					)
+				)	
+				(if (= s_spawn 11)
+					(begin
+						(cond
+							((= s_character_type 0)
+								(begin
+									(print "leader and followers")
+									(ai_place sq_leader01)
+									(sleep 1)
+									(cleanup)
+									(if (= b_character 1)
+										(set s_character_type 0)
+									)	
+								)
+							)
+						)
+					)
+				)													
+		0)
+	1)
+)
+
+(script static void warthog
+	(ai_place sq_warthog01)
+	(ai_place sq_fodder)
+)
+
+(script static void turret
+	(ai_place sq_turret)
+	(ai_place sq_fodder)
+)
+
+(script static void civilian
+	(ai_place sq_civilian)
+)
+
+(script static void sv_buddies
+	(if (= b_grunt 1)
+		(begin
+			(ai_place sq_elite01/grunt01)
+			(ai_place sq_elite01/grunt02)
+			(ai_place sq_elite01/grunt03)
+		)
+	)
+	(if (= b_jackal 1)
+		(begin
+			(ai_place sq_elite01/jackal01)
+			(ai_place sq_elite01/jackal02)
+		)
+	)	
+	(if (= b_elite_pack 1)
+		(begin
+			(ai_place sq_elite01/elite_pack01)
+			(ai_place sq_elite01/elite_pack02)
+		)
+	)	
+)
+
+(script dormant sc_spartan_health_check
+	(sleep_until
+		(begin
+			(sleep_until (<= (object_get_health (ai_get_object sq_spartan01)) 0.5) 1)
+				(set b_spartan_health 1)
+				(print "set b_spartan_health 1")
 			
-(global boolean g_aa_repaired FALSE)
-(script command_script cs_kat_repair
-	(cs_abort_on_damage TRUE)
-	(cs_enable_pathfinding_failsafe TRUE)
-	(print "repairing AA sir... cover me")
-	(if (>= aa_repair_time_seconds aa_repair_time_1st_complete)
+			(sleep_until (>= (object_get_shield (ai_get_object sq_spartan01)) 0.5) 1)
+				(print "waiting 10 seconds")
+				(sleep 300)
+				(set b_spartan_health 0)
+				(print "set b_spartan_health 0")
+		0)
+	1)		
+)
+
+
+(script static void sv_spartan_removal
+	(ai_erase sq_spartan01)
+)
+
+(script static void cleanup
+	(if (= b_nocleanup 0)
 		(begin
-			(cs_go_to_and_face ps_aa/kat_goto01 ps_aa/kat_face01)
-			(set aa_kat_is_repairing TRUE)
-			(object_create fx_rapair01)
-			(cs_custom_animation_loop objects\characters\spartans\spartans "m20_spartan:repair" TRUE)
-			(hud_mark_object_forever (ai_get_object ai_current_actor))
-			(sleep_until (< aa_repair_time_seconds aa_repair_time_1st_complete))
-			(print "we're making progress... keep me covered")
-			(object_destroy fx_rapair01)
-			(cs_run_command_script ai_current_actor cs_kat_repair)))
-	
-	(if (>= aa_repair_time_seconds aa_repair_time_2nd_complete)
+			(garbage_collect_now)
+			(set s_cleanup (+ s_cleanup 1))
+		)
+	)
+)
+
+(script static void weapon_cycle
+	(if (= b_weapon 0)
 		(begin
-			(cs_go_to_and_face ps_aa/kat_goto02 ps_aa/kat_face02)
-			(set aa_kat_is_repairing TRUE)
-			(object_create fx_rapair02)
-			(cs_custom_animation_loop objects\characters\spartans\spartans "m20_spartan:repair" TRUE)
-			(hud_mark_object_forever (ai_get_object ai_current_actor))
-			(sleep_until (< aa_repair_time_seconds aa_repair_time_2nd_complete))
-			(print "ok almost there")
-			(object_destroy fx_rapair02)
-			(cs_run_command_script ai_current_actor cs_kat_repair)))
-	
-	(cs_go_to_and_face ps_aa/kat_goto03 ps_aa/kat_face03)
-	(set aa_kat_is_repairing TRUE)
-	(object_create fx_rapair03)
-	(cs_custom_animation_loop objects\characters\spartans\spartans "m20_spartan:repair" TRUE)
-	(hud_mark_object_forever (ai_get_object ai_current_actor))
-	(sleep_until (< aa_repair_time_seconds 0))
-	(object_destroy fx_rapair03)
+			(set b_weapon 1)
+			(print "b_weapon set to 1")
+			(print "Will cycle through weapons")
+		)
+		(begin
+			(set b_weapon 0)
+			(print "b_weapon set to 0")
+			(print "Will not cycle through weapons")
+		)
+	)
 )
 
-(script dormant repairing_transmission_pulse
-	(if aa_kat_is_repairing (cinematic_set_title ct_aa_repairing))
-	(sleep 30)
+(script static void character
+	(if (= b_character 0)
+		(begin
+			(set b_character 1)
+			(print "b_character set to 1")
+			(print "Will cycle through characters")
+		)		
+		(begin
+			(set b_character 0)
+			(print "b_character set to 0")
+			(print "Will not cycle through characters")
+		)
+	)
 )
 
-(script static void aa_turret_fire_go
-	(object_destroy sc_aa_gun)
-	(ai_place aa_gun02)
-	(ai_place aa_gun_driver)
-	
-	(object_cannot_take_damage (ai_vehicle_get_from_starting_location aa_gun02/driver01))
-	(ai_cannot_die aa_gun_driver TRUE)
-	(ai_vehicle_enter_immediate aa_gun_driver/driver01 (ai_vehicle_get_from_starting_location aa_gun02/driver01) "warthog_g")
-	
-	(ai_place banshee)
-	(ai_place phantom)
-	(ai_set_targeting_group banshee 1)
-	(ai_set_targeting_group phantom 1)
-	(ai_set_targeting_group aa_gun_driver 1)
+(script static void wepchar
+	(weapon_cycle)
+	(character)
 )
 
-(script command_script cs_turret
-	(cs_shoot_point TRUE ps_aa/aa_shootat01)
-	(sleep_forever)
+(script static void player_front
+	(if (= b_player_front 0)
+		(begin
+			(set b_player_front 1)
+			(print "Player is the front")
+		)		
+		(begin
+			(set b_player_front 0)
+			(print "Player is no longer the front")
+		)
+	)
 )
 
+(script static void cue_test
+	(if (= b_cue_test 0)
+		(begin
+			(set b_cue_test 1)
+			(print "Cue test is on")
+		)		
+		(begin
+			(set b_cue_test 0)
+			(print "Cue test is off")
+		)
+	)
+)
 
-; =================================================================================================
-; AMBIENT HELPER SCRIPTS
-; =================================================================================================
+(script static void blinddeaf
+	(if (= b_blinddeaf 0)
+		(begin
+			(set b_blinddeaf 1)
+			(print "b_blinddeaf set to 1")
+			(print "Characters are blind and deaf")
+		)
+		(begin
+			(set b_blinddeaf 0)
+			(print "b_blinddeaf set to 0")
+			(print "No longer blind and deaf")
+		)
+	)
+)
+
+(script static void night
+	(if (= b_night 0)
+		(begin
+			(set b_night 1)
+			(print "b_night set to 1")
+			(print "Night mode is on")
+		)
+		(begin
+			(set b_night 0)
+			(print "b_night set to 0")
+			(print "Night mode is off")
+		)
+	)
+)
+
+(script static void follow
+	(if (= b_follow 0)
+		(begin
+			(set b_follow 1)
+			(print "b_follow set to 1")
+			(print "Characters will follow")
+		)
+		(begin
+			(set b_follow 0)
+			(print "b_follow set to 0")
+			(print "No longer following")
+		)
+	)
+)
+
+(script static void trooper
+	(set s_character_type 0)
+	(print "trooper")
+)
+
+(script static void odst
+	(set s_character_type 1)
+	(print "odst")
+)
+
+(script static void minor
+	(set s_character_type 0)
+	(print "minor")
+)
+
+(script static void officer
+	(set s_character_type 1)
+	(print "officer")
+)
+
+(script static void ultra
+	(set s_character_type 2)
+	(print "ultra")
+)
+
+(script static void jetpack
+	(set s_character_type 3)
+	(print "jetpack")
+)
+
+(script static void specop
+	(set s_character_type 4)
+	(print "specop")
+)
+
+(script static void general
+	(set s_character_type 5)
+	(print "general")
+)
+
+(script static void story
+	(set s_character_type 6)
+	(print "story")
+)
+
+(script static void major
+	(set s_character_type 1)
+	(print "major")
+)
+
+(script static void sniper
+	(set s_character_type 2)
+	(print "sniper")
+)
+
+(script static void murmillone
+	(set s_character_type 2)
+	(print "murmillone")
+)
+
+(script static void commando
+	(set s_character_type 3)
+	(print "commando")
+)
+
+(script static void champion
+	(set s_character_type 4)
+	(print "champion")
+)
+
+(script static void weapon_chief
+	(set s_character_type 2)
+	(print "weapon chieftain")
+)
+
+(script static void armor_chief
+	(set s_character_type 3)
+	(print "armor chieftain")
+)
+
+(script static void carter
+	(set s_character_type 0)
+	(print "carter")
+	(sv_spartan_removal)
+)
+
+(script static void kat
+	(set s_character_type 1)
+	(print "kat")
+	(sv_spartan_removal)
+)
+
+(script static void emile
+	(set s_character_type 2)
+	(print "emile")
+	(sv_spartan_removal)
+)
+
+(script static void jun
+	(set s_character_type 3)
+	(print "jun")
+	(sv_spartan_removal)
+)
+
+(script static void jorge
+	(set s_character_type 4)
+	(print "jorge")
+	(sv_spartan_removal)
+)
+
+(script static void assault_rifle
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 0)
+			(print "assault rifle")
+		)
+	)
+)
+
+(script static void plasma_rifle
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 0)
+			(print "plasma rifle")
+		)
+	)
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 12)
+			(print "plasma rifle")
+		)
+	)	
+)
+
+(script static void dual
+	(if (= s_spawn 1)
+		(begin
+			(set s_weapon_type 2)
+			(print "dual plasma pistol")
+		)
+	)
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 1)
+			(print "dual plasma rifle")
+		)
+	)
+)
+
+(script static void dualsword
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 2)
+			(print "dual plasma rifle with sword")
+		)
+	)
+)
+
+(script static void needler
+	(if (= s_spawn 1)
+		(begin
+			(set s_weapon_type 1)
+			(print "needler")
+		)
+	)
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 3)
+			(print "needler")
+		)
+	)
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 8)
+			(print "needler")
+		)
+	)	
+	(if (= s_spawn 4)
+		(begin
+			(set s_weapon_type 1)
+			(print "needler")
+		)
+	)		
+	(if (= s_spawn 5)
+		(begin
+			(set s_weapon_type 1)
+			(print "needler")
+		)
+	)	
+)
+
+(script static void plasma_repeater
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 4)
+			(print "plasma repeater")
+		)
+	)
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 11)
+			(print "plasma repeater")
+		)
+	)	
+	(if (= s_spawn 7)
+		(begin
+			(set s_weapon_type 1)
+			(print "plasma repeater")
+		)
+	)		
+)
+
+(script static void concussion_rifle
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 5)
+			(print "concussion rifle")
+		)
+	)
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 1)
+			(print "concussion rifle")
+		)
+	)	
+	(if (= s_spawn 7)
+		(begin
+			(set s_weapon_type 2)
+			(print "concussion rifle")
+		)
+	)		
+)
+
+(script static void needle_rifle
+	(if (= s_spawn 1)
+		(begin
+			(set s_weapon_type 3)
+			(print "needle rifle")
+		)
+	)
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 6)
+			(print "needle rifle")
+		)
+	)
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 7)
+			(print "needle rifle")
+		)
+	)	
+	(if (= s_spawn 5)
+		(begin
+			(set s_weapon_type 2)
+			(print "needle rifle")
+		)
+	)		
+)
+
+(script static void focus_rifle
+	(if (= s_spawn 1)
+		(begin
+			(set s_weapon_type 4)
+			(print "focus rifle")
+		)
+	)
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 7)
+			(print "focus rifle")
+		)
+	)
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 4)
+			(print "focus rifle")
+		)
+	)	
+	(if (= s_spawn 5)
+		(begin
+			(set s_weapon_type 3)
+			(print "focus rifle")
+		)
+	)		
+)
+
+(script static void plasma_turret
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 8)
+			(print "plasma turret")
+		)
+	)
+	(if (= s_spawn 7)
+		(begin
+			(set s_weapon_type 5)
+			(print "plasma turret")
+		)
+	)	
+)
+
+(script static void hammer
+	(if (= s_spawn 7)
+		(begin
+			(set s_weapon_type 6)
+			(print "gravity hammer")
+		)
+	)
+)
+
+(script static void flak_cannon
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 9)
+			(print "flak cannon")
+		)
+	)
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 3)
+			(print "flak cannon")
+		)
+	)	
+	(if (= s_spawn 7)
+		(begin
+			(set s_weapon_type 3)
+			(print "flak cannon")
+		)
+	)	
+)
+
+(script static void plasma_launcher
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 10)
+			(print "plasma launcher")
+		)
+	)
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 9)
+			(print "plasma launcher")
+		)
+	)	
+	(if (= s_spawn 7)
+		(begin
+			(set s_weapon_type 4)
+			(print "plasma launcher")
+		)
+	)	
+)
+
+(script static void sword
+	(if (= s_spawn 2)
+		(begin
+			(set s_weapon_type 11)
+			(print "sword")
+		)
+	)
+)
+
+(script static void dmr
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 2)
+			(print "dmr")
+		)
+	)
+)
+
+(script static void grenade_launcher
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 5)
+			(print "grenade launcher")
+		)
+	)
+)
+
+(script static void magnum
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 6)
+			(print "magnum")
+		)
+	)
+)
+
+(script static void plasma_pistol
+	(if (= s_spawn 1)
+		(begin
+			(set s_weapon_type 0)
+			(print "plasma pistol")
+		)
+	)
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 10)
+			(print "plasma pistol")
+		)
+	)
+	(if (= s_spawn 5)
+		(begin
+			(set s_weapon_type 0)
+			(print "plasma pistol")
+		)
+	)
+)
+
+(script static void rocket_launcher
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 13)
+			(print "rocket launcher")
+		)
+	)
+)
+
+(script static void shotgun
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 14)
+			(print "shotgun")
+		)
+	)
+)
+
+(script static void sniper_rifle
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 15)
+			(print "sniper rifle")
+		)
+	)
+)
+
+(script static void spartan_laser
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 16)
+			(print "spartan laser")
+		)
+	)
+)
+
+(script static void spike_rifle
+	(if (= s_spawn 3)
+		(begin
+			(set s_weapon_type 17)
+			(print "spike rifle")
+		)
+	)
+	(if (= s_spawn 7)
+		(begin
+			(set s_weapon_type 0)
+			(print "spike rifle")
+		)
+	)	
+)
+
+(script static void grunt_buddies
+	(if (= b_grunt 0)
+		(begin
+			(set b_grunt 1)
+			(print "now with grunt buddies")
+		)
+		(begin 
+			(set b_grunt 0)
+			(print "no more grunt buddies :(")
+		)
+	)
+)
+
+(script static void jackal_buddies
+	(if (= b_jackal 0)
+		(begin
+			(set b_jackal 1)
+			(print "now with jackal buddies")
+		)
+		(begin 
+			(set b_jackal 0)
+			(print "no more jackal buddies :(")
+		)
+	)
+)
+
+(script static void elite_pack
+	(if (= b_elite_pack 0)
+		(begin
+			(set b_elite_pack 1)
+			(print "now with elite pack buddies")
+		)
+		(begin 
+			(set b_elite_pack 0)
+			(print "no more elite pack buddies :(")
+		)
+	)
+)
+
+(script dormant sc_cleanup
+	(sleep_until
+		(begin
+			(sleep_until (>= s_cleanup 5) 1)
+				(sleep 60)
+				(garbage_collect_unsafe)
+				(set s_cleanup 0)
+		0)
+	)
+)
+
 (script command_script cs_abort
 	(sleep 1)
 )
 
-(global short objective_flash_time 15)
-(script static void ct_objective_complete_go
-	(sleep objective_flash_time)
-	(sound_impulse_start sound\game_sfx\ui\transition_beeps NONE 1)
-	(cinematic_set_title ct_objective_complete)
-	(sleep objective_flash_time)
-	(sound_impulse_start sound\game_sfx\ui\transition_beeps NONE 1)
-	(cinematic_set_title ct_objective_complete)
-	(sleep objective_flash_time)
-	(sound_impulse_start sound\game_sfx\ui\transition_beeps NONE 1)
-	(cinematic_set_title ct_objective_complete)
-	(sleep objective_flash_time)
-	(sound_impulse_start sound\game_sfx\ui\transition_beeps NONE 1)
-	(cinematic_set_title ct_objective_complete)
-)
-
-(script dormant ct_activate_nav
-	(sound_impulse_start sound\game_sfx\ui\powerup_invis NONE 1)
-	(cinematic_set_title ct_activate_nav_beacon)
-)
-
-
-; BLIP STUPIDITY
-(global boolean g_object_marking_active 0)
-(global short g_current_mark_blip_count 0)
-(global sound g_mark_sound "sound\game_sfx\ui\transition_beeps")
-
-(script static void (hud_mark (object obj) (short final_delay))
-	(sleep_until (not g_object_marking_active) 1)
-	(set g_object_marking_active 1)
-
-	(blip obj 2 2)
-	(blip obj 2 2)
-	(blip obj final_delay 2)
-	
-	(set g_object_marking_active 0)
-)
-
-(script static void (hud_mark_object_forever (object obj))
-		(begin
-			(blip obj 2 2)
-			(blip obj 2 2)
-			(chud_track_object obj 1)
-			(sound_impulse_start g_mark_sound NONE 1)))
-			
-(script static void (hud_unmark_object (object obj))
-	(chud_track_object obj 0))
-
-(script static void (blip (object obj) (short icon_disappear_time) (short final_delay))
-	(chud_track_object obj 1)
-	(sound_impulse_start g_mark_sound NONE 1)
-	(sleep icon_disappear_time)
-	(chud_track_object obj 0)
-	(sleep final_delay)
-)
-
-
-; =================================================================================================
-; sapien HELPER SCRIPTS
-; =================================================================================================	
 (script static void 1
-	(if ai_render_sector_bsps
-		(set ai_render_sector_bsps 0)
-		(set ai_render_sector_bsps 1)
+	(if  (= b_thespian 0)
+		(print "skirmishers!")
 	)
+	(set s_spawn 1)
+	(sleep 1)
 )
 
 (script static void 2
-	(if ai_render_objectives
-		(set ai_render_objectives 0)
-		(set ai_render_objectives 1)
-	)
+	(if  (= b_thespian 0)
+		(print "elites!")
+	)	
+	(set s_spawn 2)
+	(sleep 1)
 )
 
 (script static void 3
-	(if ai_render_decisions
-		(set ai_render_decisions 0)
-		(set ai_render_decisions 1)
-	)
+	(if  (= b_thespian 0)
+		(print "marines!")
+	)	
+	(set s_spawn 3)
+	(sleep 1)
 )
 
 (script static void 4
-	(if ai_render_command_scripts
-		(set ai_render_command_scripts 0)
-		(set ai_render_command_scripts 1)
-	)
+	(if  (= b_thespian 0)
+		(print "grunts!")
+	)	
+	(set s_spawn 4)
+	(sleep 1)
 )
 
 (script static void 5
-	(if debug_performances
-		(set debug_performances 0)
-		(set debug_performances 1)
+	(if  (= b_thespian 0)
+		(print "jackals!")
 	)
+	(set s_spawn 5)
+	(sleep 1)
 )
 
 (script static void 6
-	(if debug_instanced_geometry_cookie_cutters
-		(set debug_instanced_geometry_cookie_cutters 0)
-		(set debug_instanced_geometry_cookie_cutters 1)
+	(if  (= b_thespian 0)
+		(print "buggers!")
+	)
+	(set s_spawn 6)
+	(sleep 1)
+)
+
+(script static void 7
+	(if  (= b_thespian 0)
+		(print "brutes!")
+	)
+	(set s_spawn 7)
+	(sleep 1)
+)
+
+(script static void 8
+	(if  (= b_thespian 0)
+		(print "spartans!")
+	)
+	(set s_spawn 8)
+	(sleep 1)
+)
+
+(script static void 9
+	(if  (= b_thespian 0)
+		(print "hunters!")
+	)
+	(set s_spawn 9)
+	(sleep 1)
+)
+
+(script static void 10
+	(if  (= b_thespian 0)
+		(print "engineers!")
+	)
+	(set s_spawn 10)
+	(sleep 1)
+)
+
+(script static void 11
+	(if  (= b_thespian 0)
+		(print "leader and followers!")
+	)
+	(set s_spawn 11)
+	(sleep 1)
+)
+
+(script static void evaluate
+	(if (= b_evaluate 0)
+		(begin
+			(set ai_render_evaluations 1)
+			(set ai_render_evaluations_detailed 1)
+			(set ai_render_evaluations_text 1)
+			(set ai_render_firing_position_statistics 1)
+			(set ai_render_decisions 1)
+			(set ai_render_behavior_stack 1)
+			(set ai_render_aiming_vectors 1)
+			(set b_evaluate 1)
+		)
+		(begin
+			(set ai_render_evaluations 0)
+			(set ai_render_evaluations_detailed 0)
+			(set ai_render_evaluations_text 0)
+			(set ai_render_firing_position_statistics 0)
+			(set ai_render_decisions 0)
+			(set ai_render_behavior_stack 0)
+			(set ai_render_aiming_vectors 0)
+			(set b_evaluate 0)
+		)		
 	)
 )
+
+(script static void double
+	(if (= b_double 0)
+		(begin
+			(print "doubling up!")
+			(set b_double 1)
+		)
+		(begin
+			(print "singles again!")
+			(set b_double 0)
+		)		
+	)
+)
+
+(script static void pack
+	(if (= b_double 0)
+		(begin
+			(print "pack is now on!")
+			(set b_double 1)
+		)
+		(begin
+			(print "pack is now off!")
+			(set b_double 0)
+		)		
+	)
+)
+
+(script static void throttle
+	(if (= debug_biped_throttle 0)
+		(begin
+			(print "throttle set to 1")
+			(set debug_biped_throttle 1)
+			(set ai_render_emotions 1)
+		)
+		(begin
+			(print "throttle set to 0")
+			(set debug_biped_throttle 0)
+			(set ai_render_emotions 0)
+		)		
+	)
+)
+
+(script static void shooting
+	(if (= ai_render_shooting 0)
+		(begin
+			(print "shooting set to 1")
+			(set ai_render_shooting 1)
+		)
+		(begin
+			(print "shooting set to 0")
+			(set ai_render_shooting 0)
+		)		
+	)
+)
+
+(script static void text
+	(if (= ai_render_evaluations_text 0)
+		(begin
+			(set ai_render_evaluations_text 1)
+		)
+		(begin
+			(set ai_render_evaluations_text 0)
+		)		
+	)
+)
+
+(script static void bunkering
+	(if (= ai_render_firing_position_bunkering 0)
+		(begin
+			(set ai_render_firing_position_bunkering 1)
+			(set ai_render_firing_position_info 1)
+		)
+		(begin
+			(set ai_render_firing_position_bunkering 0)
+			(set ai_render_firing_position_info 0)
+		)		
+	)
+)
+
+(script static void speed
+	(if (= game_speed 0)
+		(begin
+			(print "game speed set to 1")
+			(set game_speed 1)
+		)
+		(begin
+			(print "game speed set to 0")
+			(set game_speed 0)
+		)		
+	)
+)
+
+(script static void heal
+	(unit_set_current_vitality (player0) 100 100)		
+)
+
+(script static void teleport_vehicle
+	(object_teleport (player0) cf_teleport_vehicle)
+)
+
+(script static void teleport_main
+	(object_teleport (player0) cf_teleport_main)
+)
+
+(script static void friendly_start
+	(object_teleport (player0) cf_teleport02)
+	(sleep_forever sc_input)
+	(ai_place sq_friendly_ai)
+	(wake sc_friendly_objcon)
+)
+
+(script static void enemies_start
+	(wake sc_friendly_enemies)
+)
+
+(script dormant sc_friendly_objcon
+	(sleep_until (= (volume_test_players tv_friendly01) 1) 1)
+		(set s_friendly_objcon 1)
+		(print "objcon set to 1")
+	(sleep_until (= (volume_test_players tv_friendly02) 1) 1)
+		(set s_friendly_objcon 2)	
+		(print "objcon set to 2")
+	(sleep_until (= (volume_test_players tv_friendly03) 1) 1)
+		(set s_friendly_objcon 3)	
+		(print "objcon set to 3")
+	(sleep_until (= (volume_test_players tv_friendly04) 1) 1)
+		(set s_friendly_objcon 4)		
+		(print "objcon set to 4")	
+)
+
+(script dormant sc_friendly_enemies
+		(ai_place sq_enemy01)
+	(sleep_until (= (volume_test_players tv_friendly01) 1) 1)
+		(ai_place sq_enemy02)
+	(sleep_until (= (volume_test_players tv_friendly02) 1) 1)
+		(ai_place sq_enemy03)
+	(sleep_until (= (volume_test_players tv_friendly03) 1) 1)
+		(ai_place sq_enemy04)	
+	(sleep_until (= (volume_test_players tv_friendly04) 1) 1)
+		(ai_place sq_enemy05)
+)
+
+(script static void bring_forward
+	(ai_bring_forward (ai_get_object sq_friendly_ai) 3)
+)
+
+(script static void lead_script
+	(if (= s_friendly 1)
+		(begin
+			(print "going back to open")
+			(set s_friendly 0)
+		)
+		(begin
+			(print "leading player")
+			(set s_friendly 1)
+		)		
+	)
+)
+
+(script static void follow_script
+	(if (= s_friendly 2)
+		(begin
+			(print "going back to open")
+			(set s_friendly 0)
+		)
+		(begin
+			(print "following player")
+			(set s_friendly 2)
+		)		
+	)
+)
+
+(script static void nocue_script
+	(if (= s_friendly 3)
+		(begin
+			(print "going back to open")
+			(set s_friendly 0)
+		)
+		(begin
+			(print "following player without cues")
+			(set s_friendly 3)
+		)		
+	)
+)
+
+(script static void fireteam_start
+	(object_teleport (player0) cf_teleport02)
+	(sleep_forever sc_input)
+	(ai_place sq_fireteam01)
+	(sleep 1)
+	(fireteam_initialize)
+)
+
+(script static void fireteam_initialize
+	(ai_set_fireteam_absorber sq_fireteam01 TRUE)
+	(ai_player_add_fireteam_squad player0 sq_fireteam_proxy)
+	(ai_player_set_fireteam_max player0 5)
+	(ai_player_set_fireteam_max_squad_absorb_distance player0 3.0)
+)
+
+;===============
+
+(script static void recycle
+	(sleep_forever sc_cleanup)
+	(print "clean up script turned off")
+	(set b_nocleanup 1)
+)
+
+

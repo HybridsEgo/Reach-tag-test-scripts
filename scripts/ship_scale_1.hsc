@@ -1,5 +1,5 @@
 ;*********************************************************************;
-;main script
+;Main Script
 ;*********************************************************************;
 (script startup ship_scale
 	(wake banshee_spawn)
@@ -32,7 +32,7 @@
 				(banshee_left_launch)
 			)
 			(sleep 150)
-			false
+			FALSE
 		)
 	)
 )
@@ -46,7 +46,7 @@
 			(fx_ship_right_go)
 			(sleep (random_range 30 90))
 			(fx_ship_left_go)
-			false
+			FALSE
 		)
 	)
 )
@@ -136,7 +136,7 @@
 				(sleep (random_range 1 (* 30 2)))
 				(sleep (random_range 1 (* 30 2)))
 			)
-			false
+			FALSE
 		)
 	)
 )
@@ -178,7 +178,7 @@
 					(sleep (random_range 1 (* 30 1)))
 				)
 			)
-			false
+			FALSE
 		)
 	)
 )
@@ -194,22 +194,22 @@
 )
 
 (script command_script banshee_right_launch_cs
-	(cs_vehicle_boost true)
+	(cs_vehicle_boost TRUE)
 	(sleep (random_range 10 60))
 	(cs_run_command_script ai_current_actor banshee_right_fly_cs)
 )
 
 (script command_script banshee_left_launch_cs
-	(cs_vehicle_boost true)
+	(cs_vehicle_boost TRUE)
 	(sleep (random_range 10 60))
 	(cs_run_command_script ai_current_actor banshee_left_fly_cs)
 )
 
 (script command_script banshee_right_fly_cs
-	(cs_enable_pathfinding_failsafe true)
-	(cs_enable_moving true)
-	(cs_enable_looking true)
-	(cs_enable_targeting true)
+	(cs_enable_pathfinding_failsafe TRUE)
+	(cs_enable_moving TRUE)
+	(cs_enable_looking TRUE)
+	(cs_enable_targeting TRUE)
 	(sleep_until
 		(begin
 			(begin_random
@@ -222,16 +222,16 @@
 				(sleep (* 30 10))
 				(sleep (* 30 10))
 			)
-			false
+			FALSE
 		)
 	)
 )
 
 (script command_script banshee_left_fly_cs
-	(cs_enable_pathfinding_failsafe true)
-	(cs_enable_moving true)
-	(cs_enable_looking true)
-	(cs_enable_targeting true)
+	(cs_enable_pathfinding_failsafe TRUE)
+	(cs_enable_moving TRUE)
+	(cs_enable_looking TRUE)
+	(cs_enable_targeting TRUE)
 	(sleep_until
 		(begin
 			(begin_random
@@ -244,7 +244,7 @@
 				(sleep (* 30 10))
 				(sleep (* 30 10))
 			)
-			false
+			FALSE
 		)
 	)
 )
