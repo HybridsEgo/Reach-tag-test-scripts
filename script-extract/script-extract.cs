@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-class extract
+class AOBScanner
 {
     static void Main(string[] args)
     {
@@ -17,7 +17,7 @@ class extract
         string scriptsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts");
         Directory.CreateDirectory(scriptsFolder);
 
-        foreach (var filePath in Directory.GetFiles(folderPath))
+        foreach (var filePath in Directory.GetFiles(folderPath, "*.scenario_hs_source_file", SearchOption.AllDirectories))
         {
             try
             {
@@ -50,7 +50,16 @@ class extract
                             byte[] prunedBytes = new byte[prunedLength];
                             Array.Copy(extractedBytes, 4, prunedBytes, 0, prunedLength);
 
-                            string scriptFileName = Path.Combine(scriptsFolder, Path.GetFileNameWithoutExtension(filePath) + ".hsc");
+                            string baseFileName = Path.GetFileNameWithoutExtension(filePath);
+                            string scriptFileName = Path.Combine(scriptsFolder, baseFileName + ".hsc");
+
+                            int counter = 1;
+                            while (File.Exists(scriptFileName))
+                            {
+                                scriptFileName = Path.Combine(scriptsFolder, $"{baseFileName}_{counter}.hsc");
+                                counter++;
+                            }
+
                             File.WriteAllBytes(scriptFileName, prunedBytes);
 
                             Console.WriteLine($"Extracted and pruned data saved to: {scriptFileName}");
