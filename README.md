@@ -1,6 +1,6 @@
 # Reach tag test scripts
  
-Script tags and extracted scripts from the post launch 2011 tag build of Halo: Reach.
+Script tags and extracted scripts from the post launch DLC1 tag build of Halo: Reach.
 
 > These scripts contain the original comments which is pretty cool to see 14 years later.
 
